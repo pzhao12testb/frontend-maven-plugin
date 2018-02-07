@@ -1,10 +1,25 @@
+before_cache:
+- cp /tmp/classpathFile $HOME/CACHE/classpathFile
+before_install:
+- if [ "$TRAVIS_OS_NAME" == "osx" ];        then sed -i '' 's/<gib.enabled>true/<gib.enabled>false/'
+  $TRAVIS_BUILD_DIR/pom.xml;        else sed -i 's/<gib.enabled>true/<gib.enabled>false/'
+  $TRAVIS_BUILD_DIR/pom.xml;        fi
+before_script:
+- if [ "$TRAVIS_OS_NAME" == "osx" ];    then sed -i '' 's/<gib.enabled>false/<gib.enabled>true/'
+  $TRAVIS_BUILD_DIR/pom.xml;    else sed -i 's/<gib.enabled>false/<gib.enabled>true/'
+  $TRAVIS_BUILD_DIR/pom.xml;    fi
+- if [[ -e $HOME/CACHE/classpathFile ]]; then cp $HOME/CACHE/classpathFile /tmp/;
+  fi
 language: java
-# Run on OSX and Linux
 matrix:
   include:
-    - os: linux
-      jdk: openjdk8
-    - os: osx
-      #osx_image: beta-xcode6.1
-# Run Integration tests
-script: "mvn test && mvn clean verify"
+  - jdk: oraclejdk7
+    os: linux
+  - os: osx
+script:
+- touch /tmp/NOW
+- echo GIBSTUDYSTART $(date)
+- mvn test && mvn clean verify
+- echo GIBSTUDYEND $(date)
+- cd $TRAVIS_BUILD_DIR
+- echo TESTNUM $(find . -name TEST-*.xml -newer /tmp/NOW | wc -l)
